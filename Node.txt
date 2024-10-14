@@ -1,0 +1,438 @@
+				Node.js
+.....................................................................................
+
+Core Node.js
+
+npm fundamentals
+
+Express.js
+
+ORM integration/Database Programming
+
+Microservices and implementation -  Moleculer.js
+.....................................................................................
+
+Core Node.js
+.............
+
+1.What is Node.js
+2.Why Node.js
+3.High level and low level architecture of Node.js
+4.Node.js coding part
+
+What is Node.js?
+  Node.js js runtime env and platform to build js apps.
+
+JS Runtime:
+
+ where js apps/code to be executed.
+
+places of js runtime
+
+1.browser
+   Every web browser has embeded js runtime.
+
+ Every js runtime is different with respect to implementation but all js engine executes the code in similar way.
+ every js engine implements the "ECMA" specification.
+
+			ECMA Spec -
+			   |
+	-------------------------------------------------
+	|              |                |        |
+    Microsoft Edge  google chrome     Firefox   Opera
+      Chakra           v8	   Spider Monkey
+
+2.Standalone js engine
+  Google only released first standalone js engine called v8 , also first open source js engine.
+  based on v8 js engine only node.js was created.
+
+
+What you can do with node.js? why node.js?
+  
+    Node was created to build non blocking io (network applications) applications
+
+IO:
+1.Blocking io
+2.Non blocking io
+3.IO and multi threading.
+
+
+IO At low level:
+..................
+
+Every programming language offers api to talk to io channels, like reading data from disk,keyword,showing output in screen,sending data to network.
+
+Without help of os , we cant perform any io operations.
+
+		    language api
+			|
+		    os api  - system call
+         		|
+		    OS kernal -os low level layer
+			|	 			
+			|
+		   os kernal program- file descriptor -c
+			|
+		 hard ware layer (hdd,Network card,monitor,keyboard)
+
+
+Every file descriptor is just simple c program.
+Every file descriptor program is made up of data structure called "array".
+
+File descriptor is initalized when a process is created for eg, when you start notepad or powerpoint, when you start web server.
+
+File descriptor is intialized with three entries.
+
+Since fd is array , which is initalized with index base.
+
+fd is always initalized with 3 entries
+
+ index   Reference Pointer   Device
+  0       STDIN              keyword
+  1       STDOUT             Monitor
+  2       STDERR             Monitor
+
+Lets assume in the program we try to read file content or write file content into disk.
+
+for eg in the code
+    fs.read('path')
+
+....................................................................................
+			 Web server design and io
+.....................................................................................
+
+Web server is simple io program which reads and writes.
+
+reads means request,writes means response.
+
+web server receive request, webserver sends/writes response.
+
+
+Every request is treated as io request.
+
+How web server handles each each request?
+   Every request is mapped against a single thread.
+   Request per thread model
+
+if 100 request, there would be 100 threads.
+
+if 1000 request, we require 1000 threads
+    
+.....................................................................................
+			Non blocking api
+
+linux operating introduced first non blocking api
+called select
+in order to read data process used "receive/read" blocking api 
+select + read 
+
+select and read is initally good but not good in large scale so that new api was addeded is poll api.
+
+Poll api was introduced to simplify the communication between kernal and process using event driven programming architecture.
+
+Poll api had some limitation , so finally new api was introduced called "epoll"
+
+...................................................................................
+			C10 k problem, and Linux implemnetation
+...................................................................................
+
+Ngnix is the first non blocking webserver which was implemented in 2002 to 2003 in linux.
+
+After success of linux operating system, other os Vendors started giving wrappers
+
+Microsoft windows - iocp
+Mac - Kqueue
+unix and other bsd os - Kqueue.
+linux - epoll
+
+Now a days we use epoll, kqueue,iocp
+.....................................................................................
+			  Node.js and Nonblocking io
+....................................................................................
+Node.js was created based on nginx server in 2007.
+
+The first programmable non blocking io arch is node.js.
+
+Nodejs was created with two components
+
+1.v8 
+2.libuv
+....................................................................................
+			 libuv threading model
+....................................................................................
+
+node.js is multi threaded.
+
+node.js libuv provides two types of threads
+
+1.event loop thread - non blocking io threads
+     This thread is responsible for handling non blocking io calls primerly networking io like web,sockets,udp...
+  Per node process only one event loop thread is available
+
+2.worker poll threads- blocking threads 
+    This thread is responsible for handling blocking operations and some time non blocking file io operations
+....................................................................................
+			non blocking technologies
+
+
+Today most of the programming languages offer non blocking arch.
+
+1.node.js
+2.java  - via "Vertx,Quarkus"
+etc...
+
+Most of the languages today provides non blocking arch....
+.....................................................................................
+			Node.js Programming area
+
+1.Node REPL
+2.Node and js apis
+3.Node core apis
+4.Styles of writing async programming
+   ->Callback pattern
+   ->Promise Pattern
+   ->Promise with Async and await Pattern
+
+...................................................................................
+
+1.Node REPL - Read Evalulate Print loop
+
+Node REPL is used to run js programs interactive mode.
+
+Js programs are executed in two modes
+
+1.interactive mode - REPL mode
+2.script mode - by loading script on to the runtime
+
+
+C:\Users\subu>node
+Welcome to Node.js v20.11.1.
+Type ".help" for more information.
+> a=10
+10
+> a +10
+20
+> new Date()
+2024-10-14T07:16:52.086Z
+> JSON.stringify({"name":"subramanian"})
+'{"name":"subramanian"}'
+> Math.random()
+0.7716611572800895
+
+....................................................................................
+			node.js and js apis
+
+node supports all js apis execept browser specific apis
+
+like window,document,sessionStorage etc...
+
+> window
+Uncaught ReferenceError: window is not defined
+> document
+Uncaught ReferenceError: document is not defined
+>
+
+in js , in browser "Window" super object.
+
+in js, in node js, "Process" is super object
+
+Process:
+........
+ It gives information about node.js platform.
+
+.................................................................................
+			 How to write non blocking apps
+...................................................................................
+
+Fundamental Requirement:
+........................
+
+1.OS should support non blocking apis like select,poll,epoll,iocp,kqueue
+
+2.Program languages/platforms also should provide high level apis to map os low level apis
+
+3.In order to write non blocking apps in js(node), we have different patterns(styles)
+
+Nonblocking Applications Developement style:
+............................................
+
+1.callbacks
+2.Promises
+3.Promise with Async await
+4.reactive programming -rxjs
+
+
+1.callbacks:
+  Callback is listener function which gets registered during compile time
+  and exexcuted during runtime when ever the event is emitted.
+
+
+Req for async programming:
+ 
+1.You need high level non blocking api - provided by node.js 
+2.listener api which is called "function as parameter/hof" 
+
+HOF functions are becoming listeners/callbacks which are called when ever event is emitted.
+
+
+NonBlocking apis:
+1.timer
+   -setTimeout
+   -setInterval
+2.io
+   web
+   fs
+   socket
+ etc...
+3.process api
+  nextTick
+....................................................................................
+			Higher order function
+....................................................................................
+function blockMe(message) {
+    console.log(message)
+}
+
+function delay(callback) {
+    callback()
+}
+
+function main() {
+    blockMe('start')
+    delay(function () {
+        console.log('hello')
+    })
+    blockMe('end')
+}
+main()
+
+
+...................................................................................
+			How to implement non blocking using timers
+...................................................................................
+function blockMe(message) {
+    console.log(message)
+}
+
+function delay(callback) {
+    setTimeout(callback, 5000)
+}
+
+function main() {
+    blockMe('start')
+    delay(function () {
+        console.log('hello')
+    })
+    blockMe('end')
+}
+main()
+.....................................................................................
+			How to pass data from non blocking api to listener
+.....................................................................................
+function blockMe(message) {
+    console.log(message)
+}
+
+function delay(callback) {
+    setTimeout(callback, 5000, 'hello')
+}
+
+function main() {
+    blockMe('start')
+    delay(function (message) {
+        console.log(message)
+    })
+    blockMe('end')
+}
+main()
+....................................................................................
+
+callbacks with arrow:
+
+const blockMe = (message) => console.log(message)
+
+const sayHello = hello => setTimeout(hello, 5000, 'Hello!!')
+
+blockMe('start')
+sayHello(message => console.log(message))
+blockMe('end')
+.....................................................................................
+			complex callbacks with biz logic:
+.....................................................................................
+
+How to handle success and failures?
+
+
+const login = (userName, password, resolve, reject) => {
+    if (userName === 'admin' && password === 'admin') {
+        setTimeout(resolve, 100, 'Login success')
+    } else {
+        setTimeout(reject, 100, 'Login failed')
+    }
+}
+
+
+function main() {
+    login('admin', 'admin', (success) => {
+        console.log(success)
+    }, (err) => {
+        console.log(err)
+    })
+
+    login('ddd', 'xxx', (success) => {
+        console.log(success)
+    }, (err) => {
+        console.log(err)
+    })
+}
+main()
+
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
