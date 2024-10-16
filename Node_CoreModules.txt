@@ -1,0 +1,187 @@
+.....................................................................................
+			Types of modules
+.....................................................................................
+
+1.Custom module
+  built by us
+2.built in modules
+   provided by node.js  
+3.provided by third party/community
+  libs,frameworks
+
+Built in Node.js Modules:
+.........................
+https://nodejs.org/docs/latest/api/
+
+Built in node modules provides
+
+1.non blocking networking io apis
+   -tcp,http,datagram etc...
+2.timers
+3.file system api
+   to read and write data into disk files
+4.common apis
+   os,events
+
+Common apis:
+
+1.OS
+const os = require('node:os')
+
+function main(){
+    console.log(os.arch())
+    console.log(os.cpus())
+}
+main()
+
+./ vs ''
+.........
+
+ require('./services/TODOService');
+  ->here you can see ./
+  ./ -current dir
+
+ require('node:os'); => 
+  -here no ./ 
+
+Why?
+
+Note : if you are java devp, you know the classpath , how it works?
+
+require('node:os');
+
+Node internally uses a search algorthim,node always looks the folder called
+ "node_modules" in the current project, if not , then it searches, the node in built 
+installtion folder---c:/pf/node/node_modules--if it finds it will pick up from there else it will throw error.
+
+require('./services/TODOService');
+   it will lookup in the current dir or sub dirs only.
+
+
+.....................................................................................
+.....................................................................................
+				  Events
+
+Node.js is event driven arch.
+
+There are there two types of events
+
+1.OS kernal events
+   -timer (setTimeout,setInterval)
+   -IO events -  network,fs
+
+2.Application events
+   -it could be any thing.
+   One object can send message to another object via events.
+   Objects sends message over some message channel.
+
+Events moudle  is core module in node, which can be used to kernals events as well as application.
+
+Much of the Node.js core API is built around an idiomatic asynchronous event-driven architecture in which certain kinds of objects (called "emitters") emit named events that cause Function objects ("listeners") to be called.
+
+Emitter is kernal or Application object, Listener is a function which is otherwise called as callbacks.
+  
+Using events module, we can send and receive messages within single system or across sytem( microservice)
+
+const EventEmitter = require('node:events')
+
+class Sales extends EventEmitter {
+    constructor() {
+        super()
+        //register listener 
+        this.on('sold', (evt) => {
+            console.log(evt)
+        })
+    }
+    //biz method
+    sell(product) {
+        //emit event
+        this.emit('sold', product)
+    }
+}
+
+function main() {
+    let sales = new Sales()
+    sales.sell({ id: 1, name: 'Iphone', price: 100000 })
+
+}
+main()
+....................................................................................
+			 IO modules
+
+1.File system IO
+2.HTTP IO - Web Programming
+
+
+File System IO:
+=>We can read and write files from the disk in  two ways
+  1.blocking way
+  2.nonblocking way
+=>We can read and write files using two mode (nonblocking apis)
+  1.NonStreaming mode
+  2.Streaming mode
+
+
+=>All file operations are handled by
+  "Worker Threads" from Worker Thread Pool - either it is blocking or non blocking    io.
+=>Files are handled using callback style or promise style.
+=>Files operations are handled by "fs" module
+
+
+How to read File using nonblocking pattern? using callbacks
+
+fs.readFile(path[, options], callback)
+
+path <string> | <Buffer> | <URL> | <integer> filename or file descriptor
+options <Object> | <string>
+ encoding <string> | <null> Default: null
+ flag <string> See support of file system flags. Default: 'r'.
+ signal <AbortSignal> allows aborting an in-progress readFile
+
+callback <Function>
+  err <Error> | <AggregateError>
+  data <string> | <Buffer>
+
+.....................................................................................
+
+eg:
+Use Case : read file using callbacks
+
+const fs = require('node:fs');
+
+const fs = require('node:fs');
+
+//read
+
+function readFile() {
+    const filePath = './src/assets/info.txt'
+    const options = {
+        encoding: 'UTF-8'
+    }
+    fs.readFile(filePath, options, (err, data) => {
+        if (err) throw err
+        console.log(data)
+    })
+
+}
+
+function main() {
+    console.log('start')
+    readFile()
+    console.log('end')
+}
+main()
+
+
+Task:
+ The above code is based on callback, convert this into promise.
+ Note: You have to write your own promise Implementation
+
+
+
+
+
+
+
+
+
