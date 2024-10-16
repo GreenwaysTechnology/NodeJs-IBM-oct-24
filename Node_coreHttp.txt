@@ -1,0 +1,229 @@
+.....................................................................................
+			HTTP programming
+....................................................................................
+Node was created to build non blocking web server and web applications.
+Node provides single event loop thread which handles lot of concurrent http requests.
+Node offers high level http wrapper apis to talk to os apis.
+Node offers http as object.
+
+HTTP Objects
+
+1.Agent -  http.Agent
+  For handling connections between and server
+
+2.ClientRequest - http.clientRequest
+  For creating http clients
+
+3.Server - http.Server
+  For creating web servers,we can create app and deploy on top of server.
+  
+4.ServerResponse - http.ServerResponse
+  ServerResponse is outputstream of "http socket"
+
+5.IncomingMessage -http.IncomingMessage
+    The payload which is sent by client -  Message
+
+6.OutgoingMessage -http.OutgoingMessage
+    The data which is sent by server - Message
+
+7.Global Methods of http
+  
+ 1.createServer
+    factory method to create http server instance.
+
+HTTP events:
+ 
+ There are three types of events
+
+1.HTTP Request events
+  Which are triggered whenever client request is recived by server
+
+request.on('nameoftheevent',listner)
+
+2.Http Response events
+   Which are triggered whenever server response is sent by server
+
+response.on('nameoftheevent',listner)
+
+3.Server Events
+   Server events are triggered during server startup,connection,handshake,request
+
+ server.on('nameoftheevent',listner)
+
+common events:
+data,close,end,error
+
+Note:
+ Each Object has its own events apart from common events.
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+First Web Server: Helloworld
+//simple web server
+const http = require('node:http')
+
+//create Http Server
+const server = http.createServer((request, response) => {
+    //write code to handle request and response
+    response.write('Hello')
+    //close the stream
+    response.end()
+})
+
+
+//start the server
+server.listen(3000, () => {
+    console.log('server is ready')
+})
+
+How to attach Events?
+request,response,server.
+
+//simple web server
+const http = require('node:http')
+
+//create Http Server
+const server = http.createServer((request, response) => {
+    //write code to handle request and response
+    response.write('Hello')
+    //close the stream
+    response.end()
+})
+
+
+//start the server
+server.listen(3000, () => {
+    console.log('server is ready')
+})
+
+//attach server listener
+server.on('request', (request, response) => {
+    console.log(`Request received on ${new Date()} URL ${request.url} method ${request.method}`)
+})
+...................................................................................
+			  How to send json payload 
+.....................................................................................
+
+const http = require('node:http')
+
+const server = http.createServer((request, response) => {
+    const data = [{ id: 1, name: 'Subramanian' }, { id: 2, name: 'Ram' }]
+    const jsonData = JSON.stringify(data)
+    //set content type
+    response.writeHead(200, {
+        'Content-Type': 'application/json'
+    })
+    response.write(jsonData)
+    response.end()
+})
+
+//start the server
+server.listen(3000, () => {
+    console.log('server is ready')
+})
+.....................................................................................
+			Module driven web app with sync and async
+.....................................................................................
+
+src/services/user.service.js
+const USERS = require('../mock-data/users')
+
+class UserService {
+    constructor() {
+
+    }
+    //sync api
+    findAll() {
+        return USERS;
+    }
+    //async api -  using Promises
+    findAllAsync() {
+        return new Promise((resolve, reject) => {
+            setTimeout(resolve, 1000, USERS)
+        })
+    }
+}
+module.exports = new UserService()
+
+src/index.js
+const http = require('node:http')
+const { findAll } = require('./services/user.service')
+
+// const server = http.createServer((request, response) => {
+//     const data = findAll()
+//     const jsonData = JSON.stringify(data)
+//     //set content type
+//     response.writeHead(200, {
+//         'Content-Type': 'application/json'
+//     })
+//     response.write(jsonData)
+//     response.end()
+// })
+const server = http.createServer(async (request, response) => {
+    try {
+        response.writeHead(200, {
+            'Content-Type': 'application/json'
+        })
+        const data = await findAll()
+        const jsonData = JSON.stringify(data)
+        response.end(jsonData)
+    }
+    catch (err) {
+        response.writeHead(500, {
+            'Content-Type': 'application/json'
+        })
+        response.end({ err: err })
+    }
+})
+//start the server
+server.listen(3000, () => {
+    console.log('server is ready')
+})
+....................................................................................
+			How to pass data to server
+....................................................................................
+src/services/user.service.js
+const USERS = require('../mock-data/users')
+
+class UserService {
+    constructor() {
+
+    }
+    //sync api
+    findAll() {
+        return USERS;
+    }
+    //async api -  using Promises
+    findAllAsync() {
+        return new Promise((resolve, reject) => {
+            setTimeout(resolve, 1000, USERS)
+        })
+    }
+    save(user) {
+        console.log(user)
+    }
+}
+module.exports = new UserService()
+
+src/index.js
+const http = require('node:http')
+const { save } = require('./services/user.service')
+
+const server = http.createServer((request, response) => {
+    //get input
+    let data = ''
+    request.on('data', (chunk) => {
+        data += chunk
+    })
+    request.on('end', () => {
+        //call save method
+        save(JSON.parse(data))
+        response.end('save')
+    })
+})
+//start the server
+server.listen(3000, () => {
+    console.log('server is ready')
+})
+
