@@ -39,14 +39,9 @@ customerRouter.get('/:id', async (req, res) => {
 
 customerRouter.post('/', async (req, res) => {
     try {
-        let data = ''
-        req.on('data', (chunk) => {
-            data += chunk
-        })
-        req.on('end', async () => {
-            const response = await save(JSON.parse(data))
-            return res.status(201).json({ message: response })
-        })
+        const data = req.body
+        const response = await save(data)
+        return res.status(201).json({ message: response })
     }
     catch (err) {
         return res.status(500).json({ err })

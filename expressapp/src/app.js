@@ -1,30 +1,37 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
-require('dotenv').config()
-const PORT = process.env.PORT || 3000
+const bodyParser = require('body-parser')
+const fs = require('fs')
+const morgan = require('morgan')
+const path = require('path')
+const cors = require('cors')
 
-//parametermized middleware
-const MyMiddleware = function (param) {
-    return function (req, res, next) {
-        //handle params here and do something with params
-        console.log(param)
-        next()
-    }
+const corsOptions = {
+    origin: 'http://www.abce.com'
 }
 
-app.use((req, res, next) => {
-    res.set('companyName', 'IBM')
-    next()
-})
-app.use(MyMiddleware('MyParam'))
+const PORT = process.env.PORT || 3000
+const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
 
-app.get('/hello', (req, res) => {
-    res.end('hello')
+//enabled default cors
+app.use(cors(corsOptions))
+app.use(bodyParser.json())
+
+app.use(morgan('combined', { stream: accessLogStream }))
+app.use(bodyParser.urlencoded({ extended: false }))
+
+
+app.get('/', (req, res) => {
+    res.end('Home Page')
+})
+
+app.get('/api/customers/:id', (req, res, next) => {
+    res.json({ msg: 'cors enabled for only this particular' })
 })
 
 //start server
 const server = app.listen(PORT, () => {
-    console.log(`Express Web Server is running at ${server.address().port}`)
+    console.log(server.address())
+    console.log(`Express is running @ ${server.address().port}`)
 })
-
-
