@@ -1060,12 +1060,6 @@ customerRouter.post('/', (req, res) => {
 
 module.exports = customerRouter
 
-.....................................................................................
-				Error Handling middleware
-.....................................................................................
-
-To handle error we have error handling middleware.
-.....................................................................................
 				Error Handling middleware
 .....................................................................................
 
@@ -1367,7 +1361,556 @@ In the browser console.
 content_script_bundle.js:1 Attempting initialization Mon Jul 15 2024 20:48:41 GMT+0530 (India Standard Time)
 index.html:1 Access to fetch at 'http://localhost:3001/api/customers/1' from origin 'http://127.0.0.1:5500' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header has a value 'http://www.abce.com' that is not equal to the supplied origin. Have the server send the header with a valid value, or, if an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.Understand this error
 index.html:13 
+
 .....................................................................................
+			  Database Integration
+.....................................................................................
+
+Express can integrate sql and no sql databases,provided database drivers.
+
+sql databases:
+1.microsoft sql server
+2.MySql
+3.Postgress SQL
+4.Oracle
+etc...
+
+NoSql
+1.Mongodb
+2.redis
+3.neo4j
+etc...
+
+.....................................................................................
+			ORM and ODM
+.....................................................................................
+
+ORM - Object relational mapping for sql databases
+ODM - Object Document Mapping for nosql-Mongodb
+
+ORM framworks for node.js
+1.Prisma
+3.sequelize
+2.typeorm
+etc...
+
+ODM framework for Mongodb:
+.........................
+
+1.mongoose -https://mongoosejs.com/docs/
+2.Prisma 
+
+.....................................................................................
+				Mongodb - Mongoose
+.....................................................................................
+
+Here we are going to write code mongodb curd with mongoose framework.
+
+Steps:
+
+1.Make sure mongodb is installed or try to use mongodb cloud
+
+2.create project 
+G:\IBM\2024\Oct\NodeJs>mkdir expressMonogoose
+G:\IBM\2024\Oct\NodeJs>cd expressMonogoose
+G:\IBM\2024\Oct\NodeJs\expressMonogoose>
+
+3.G:\IBM\2024\Oct\NodeJs\expressMonogoose>npm init --yes
+Wrote to G:\IBM\2024\Oct\NodeJs\expressMonogoose\packa
+
+4.install dependencies
+npm i express
+npm install mongoose --save
+npm i nodemon --save-dev
+npm i body-parser
+npm i dotenv
+
+Coding:
+
+1.define schema
+   plan for your collection
+const mongoose = require('mongoose')
+
+const schema = mongoose.schema({
+    title:String,
+    content:String
+})
+Datatypes:
+1.String
+2.Number
+3.Date
+4.Buffer
+5.Boolean
+6.Mixed
+7.ObjectId
+8.Array
+9.Decimal128
+10.Map
+11.UUID
+
+2.create model out of schema
+const mongoose = require('mongoose')
+
+const schema = mongoose.schema({
+    title:String,
+    content:String
+})
+
+module.exports=mongoose.model("Post",schema)
+
+3.Connect mongodb.
+
+require('dotenv').config()
+const express = require('express')
+const app = express()
+const bodyParser = require('body-parser')
+const mongoose = require('mongoose')
+
+const PORT = process.env.PORT || 3000
+
+
+//connect to mongodb
+async function connectDb() {
+    try {
+        await mongoose.connect(process.env.DATABASE_URL)
+        console.log("Mongo is connected")
+
+        const server = app.listen(PORT, () => {
+            console.log(server.address())
+            console.log(`Express is running @ ${server.address().port}`)
+        })
+
+    }
+    catch (e) {
+        console.log(e)
+    }
+}
+connectDb()
+
+app.get('/', (req, res) => {
+    res.end('Home Page')
+})
+
+Here , we have started webserver only after mongodb is connected.
+
+
+Full code:
+
+src/services/posts.service.js
+const Post = require('../models/Post.model')
+
+class PostService {
+
+    //curd operations
+
+    async findAll() {
+        return await Post.find()
+    }
+    async findById(id) {
+        const post = await Post.findOne({ _id: id })
+        return post
+    }
+    // async save(post) {
+    //     const newPost = new Post({
+    //         title: post.title,
+    //         content: post.content
+    //     })
+    //     await newPost.save()
+    //     return newPost
+    // }
+    async save({ title, content }) {
+        // const newPost = new Post({
+        //     title: title,
+        //     content: content
+        // })
+        const newPost = new Post({
+            title,
+            content
+        })
+        await newPost.save()
+        return newPost
+    }
+    async update(id, { title, content }) {
+        const post = await Post.findOne({ _id: id })
+        if (!post) {
+            throw Error()
+        }
+        if (title) {
+            post.title = title
+        }
+        if (content) {
+            post.content = content
+        }
+        await post.save()
+        return post
+    }
+    async remove(id) {
+        const post = await Post.findOne({ _id: id })
+        if (post) {
+            await Post.deleteOne({ _id: id })
+        } else {
+            throw Error()
+        }
+    }
+}
+module.exports = new PostService();
+
+src/routers/posts.router.js
+const express = require('express')
+const { findAll, findById, save, update, remove } = require('../services/post.service')
+
+const PostRouter = express.Router()
+
+PostRouter.get('/', async (req, res) => {
+    try {
+        const posts = await findAll()
+        res.json(posts)
+    }
+    catch (err) {
+        res.status(400).json({ err })
+    }
+
+})
+PostRouter.post('/', async (req, res) => {
+    const post = req.body
+    try {
+        const savedPost = await save(post)
+        res.status(201).json(savedPost)
+    }
+    catch (err) {
+        res.status(400).json({ err })
+    }
+
+})
+PostRouter.get('/:id', async (req, res) => {
+    const id = req.params.id
+    try {
+        const post = await findById(id)
+        res.json(post)
+    }
+    catch (err) {
+        res.status(404).json({ err: "Post does exits" })
+    }
+
+})
+PostRouter.patch('/:id', async (req, res) => {
+    const id = req.params.id
+    const postInput = req.body
+    try {
+        const post = await update(id, postInput)
+        res.json(post)
+    }
+    catch (err) {
+        res.status(404).json({ err: "Post does exits" })
+    }
+
+})
+
+PostRouter.delete('/:id', async (req, res) => {
+    const id = req.params.id
+    try {
+        await remove(id)
+        res.status(204).send()
+    }
+    catch (err) {
+        res.status(404).json({ err: "Post does exits" })
+    }
+
+})
+
+
+module.exports = PostRouter
+app.js
+require('dotenv').config()
+const express = require('express')
+const app = express()
+const bodyParser = require('body-parser')
+const mongoose = require('mongoose')
+
+const PORT = process.env.PORT || 3000
+
+app.use(bodyParser.json())
+
+
+//connect to mongodb
+async function connectDb() {
+    try {
+        await mongoose.connect(process.env.DATABASE_URL)
+        console.log("Mongo is connected")
+
+        const server = app.listen(PORT, () => {
+            console.log(server.address())
+            console.log(`Express is running @ ${server.address().port}`)
+        })
+
+    }
+    catch (e) {
+        console.log(e)
+    }
+}
+connectDb()
+
+app.use("/api/posts", require("./routers/post.router"))
+
+app.get('/', (req, res) => {
+    res.end('Home Page')
+})
+.....................................................................................
+Coding:
+
+1.define schema
+   plan for your collection
+const mongoose = require('mongoose')
+
+const schema = mongoose.schema({
+    title:String,
+    content:String
+})
+Datatypes:
+1.String
+2.Number
+3.Date
+4.Buffer
+5.Boolean
+6.Mixed
+7.ObjectId
+8.Array
+9.Decimal128
+10.Map
+11.UUID
+
+2.create model out of schema
+const mongoose = require('mongoose')
+
+const schema = mongoose.schema({
+    title:String,
+    content:String
+})
+
+module.exports=mongoose.model("Post",schema)
+
+3.Connect mongodb.
+
+require('dotenv').config()
+const express = require('express')
+const app = express()
+const bodyParser = require('body-parser')
+const mongoose = require('mongoose')
+
+const PORT = process.env.PORT || 3000
+
+
+//connect to mongodb
+async function connectDb() {
+    try {
+        await mongoose.connect(process.env.DATABASE_URL)
+        console.log("Mongo is connected")
+
+        const server = app.listen(PORT, () => {
+            console.log(server.address())
+            console.log(`Express is running @ ${server.address().port}`)
+        })
+
+    }
+    catch (e) {
+        console.log(e)
+    }
+}
+connectDb()
+
+app.get('/', (req, res) => {
+    res.end('Home Page')
+})
+
+Here , we have started webserver only after mongodb is connected.
+
+
+Full code:
+
+src/services/posts.service.js
+const Post = require('../models/Post.model')
+
+class PostService {
+
+    //curd operations
+
+    async findAll() {
+        return await Post.find()
+    }
+    async findById(id) {
+        const post = await Post.findOne({ _id: id })
+        return post
+    }
+    // async save(post) {
+    //     const newPost = new Post({
+    //         title: post.title,
+    //         content: post.content
+    //     })
+    //     await newPost.save()
+    //     return newPost
+    // }
+    async save({ title, content }) {
+        // const newPost = new Post({
+        //     title: title,
+        //     content: content
+        // })
+        const newPost = new Post({
+            title,
+            content
+        })
+        await newPost.save()
+        return newPost
+    }
+    async update(id, { title, content }) {
+        const post = await Post.findOne({ _id: id })
+        if (!post) {
+            throw Error()
+        }
+        if (title) {
+            post.title = title
+        }
+        if (content) {
+            post.content = content
+        }
+        await post.save()
+        return post
+    }
+    async remove(id) {
+        const post = await Post.findOne({ _id: id })
+        if (post) {
+            await Post.deleteOne({ _id: id })
+        } else {
+            throw Error()
+        }
+    }
+}
+module.exports = new PostService();
+
+src/routers/posts.router.js
+const express = require('express')
+const { findAll, findById, save, update, remove } = require('../services/post.service')
+
+const PostRouter = express.Router()
+
+PostRouter.get('/', async (req, res) => {
+    try {
+        const posts = await findAll()
+        res.json(posts)
+    }
+    catch (err) {
+        res.status(400).json({ err })
+    }
+
+})
+PostRouter.post('/', async (req, res) => {
+    const post = req.body
+    try {
+        const savedPost = await save(post)
+        res.status(201).json(savedPost)
+    }
+    catch (err) {
+        res.status(400).json({ err })
+    }
+
+})
+PostRouter.get('/:id', async (req, res) => {
+    const id = req.params.id
+    try {
+        const post = await findById(id)
+        res.json(post)
+    }
+    catch (err) {
+        res.status(404).json({ err: "Post does exits" })
+    }
+
+})
+PostRouter.patch('/:id', async (req, res) => {
+    const id = req.params.id
+    const postInput = req.body
+    try {
+        const post = await update(id, postInput)
+        res.json(post)
+    }
+    catch (err) {
+        res.status(404).json({ err: "Post does exits" })
+    }
+
+})
+
+PostRouter.delete('/:id', async (req, res) => {
+    const id = req.params.id
+    try {
+        await remove(id)
+        res.status(204).send()
+    }
+    catch (err) {
+        res.status(404).json({ err: "Post does exits" })
+    }
+
+})
+
+
+module.exports = PostRouter
+app.js
+require('dotenv').config()
+const express = require('express')
+const app = express()
+const bodyParser = require('body-parser')
+const mongoose = require('mongoose')
+
+const PORT = process.env.PORT || 3000
+
+app.use(bodyParser.json())
+
+
+//connect to mongodb
+async function connectDb() {
+    try {
+        await mongoose.connect(process.env.DATABASE_URL)
+        console.log("Mongo is connected")
+
+        const server = app.listen(PORT, () => {
+            console.log(server.address())
+            console.log(`Express is running @ ${server.address().port}`)
+        })
+
+    }
+    catch (e) {
+        console.log(e)
+    }
+}
+connectDb()
+
+app.use("/api/posts", require("./routers/post.router"))
+
+app.get('/', (req, res) => {
+    res.end('Home Page')
+})
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
