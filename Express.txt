@@ -1886,15 +1886,162 @@ app.use("/api/posts", require("./routers/post.router"))
 app.get('/', (req, res) => {
     res.end('Home Page')
 })
-			
+.....................................................................................	
+			Prisma,Mongo,Express
+....................................................................................	
+
+Mongo setup:
+ 1.We cant use local database without cluster configration for Prisma.
+ 2.we have to setup mongodb with cluster either locallly or mongo Atlas cloud platform.
+
+Create Project and setup all libs:
+..................................
+mkdir prismaMongo
+G:\IBM\2024\Oct\NodeJs\prismaMongo>npm init --yes
 
 
+Dependencies:
+1.express
+2.body-parser
+3.nodemon
+4.prisma 
+5.prisma client
 
 
+npm i express
+npm i body-parser
+npm i nodemon --save-dev
+npm install prisma
+npm install @prisma/client
 
 
+have basic setup in code
+
+src/app.js
+const express = require('express')
+const app = express()
+const bodyParser = require('body-parser')
+const PORT = process.env.PORT || 3000
+
+app.use(bodyParser.json())
 
 
+const server = app.listen(PORT, () => {
+    console.log(server.address())
+    console.log(`Express is running @ ${server.address().port}`)
+})
+................................................................................
+			 setup prisma env
+.................................................................................
+
+prisma provides configuration files
+
+npx prisma init
+
+This command does two things:
+
+1.creates a new directory called prisma that contains a file called schema.prisma,  which contains the Prisma schema with your database connection variable and schema  models
+
+2.creates the .env file in the root directory of the project, which is used for defining environment variables (such as your database connection)
+
+
+G:\IBM\2024\Oct\NodeJs\prismaMongo>npx prisma init
+
+✔ Your Prisma schema was created at prisma/schema.prisma
+  You can now open it in your favorite editor.
+
+Next steps:
+1. Set the DATABASE_URL in the .env file to point to your existing database. If your database has no tables yet, read https://pris.ly/d/getting-started
+2. Set the provider of the datasource block in schema.prisma to match your database: postgresql, mysql, sqlite, sqlserver, mongodb or cockroachdb.
+3. Run prisma db pull to turn your database schema into a Prisma schema.
+4. Run prisma generate to generate the Prisma Client. You can then start querying your database.
+5. Tip: Explore how you can extend the ORM with scalable connection pooling, global caching, and real-time database events. Read: https://pris.ly/cli/beyond-orm
+
+More information in our documentation:
+https://pris.ly/d/getting-started
+
+In order to connect with mongodb we need to configure provider as mongodb
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+
+.env
+DATABASE_URL="mongodb+srv://subugee:subugee222@cluster0.shfpbhv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority&appName=Cluster0"
+
+coding:
+
+Define Model:
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// Define model (schema)
+model Post {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  title   String
+  content String
+}
+
+src/app.js
+const express = require('express')
+const app = express()
+const bodyParser = require('body-parser')
+const PORT = process.env.PORT || 3000
+const { PrismaClient } = require('@prisma/client')
+
+
+app.use(bodyParser.json())
+
+const prisma = new PrismaClient()
+
+//for simplicity ; i am not creating routers,service layer; you can /should do when 
+//write your app.
+
+app.get('/api/posts', async(req, res) => {
+    //read from mongo
+    try {
+        const posts = await prisma.post.findMany()
+        res.json(posts)
+    }
+    catch (err) {
+        console.log(err)
+        res.json({ err })
+    }
+})
+app.post('/api/posts', async (req, res) => {
+    const input = req.body
+    try {
+        const post = await prisma.post.create({
+            data: {
+                title: input.title,
+                content: input.content
+            }
+        })
+        res.json(post)
+    }
+    catch (err) {
+        console.log(err)
+        res.json({ err })
+    }
+})
+
+
+const server = app.listen(PORT, () => {
+    console.log(server.address())
+    console.log(`Express is running @ ${server.address().port}`)
+})
+.....................................................................................
+			SQL,Prisma Express
+.....................................................................................
 
 
 
