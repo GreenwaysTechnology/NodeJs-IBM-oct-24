@@ -868,6 +868,198 @@ async function main() {
     }
 }
 main()
+....................................................................................
+			  Input param validation and action syntax
+....................................................................................
+
+Actions are written using two syntax
+
+Syntax : 1
+
+broker.createService({
+    name: "math",
+    actions: {
+       add(ctx) {
+            const { a, b } = ctx.params
+            const res = a + b 
+            return `Result = ${res}`
+        },
+    }
+})
+
+Syntax : 2:
+
+
+broker.createService({
+    name: "math",
+    actions: {
+      add: {
+         //method meta information
+        handler(ctx){
+          //biz logic
+       }   
+      }
+    }
+})
+
+
+Validation: simple:
+  a and b must be number
+//start:
+const { ServiceBroker } = require('moleculer')
+//create service Broker instance
+const broker = new ServiceBroker()
+
+broker.createService({
+    name: "math",
+    actions: {
+        add: {
+            //meta information
+            params: {
+                a: "number",
+                b: "number"
+            },
+            handler(ctx) {
+                const { a, b } = ctx.params
+                return a + b
+            }
+        }
+    }
+})
+
+
+
+async function main() {
+    try {
+        //start service broker: start webserver
+        await broker.start()
+        //invoke service methods
+        // const result = await broker.call('math.add', { a: 10, b: 20 })
+        const result = await broker.call('math.add', { a: '10', b: 20 })
+
+        console.log(result)
+
+    }
+    catch (err) {
+        console.log(err)
+    }
+}
+main()
+
+Validation Advanced:
+
+a, b must be number
+a, be must be postive number
+//start:
+const { ServiceBroker } = require('moleculer')
+//create service Broker instance
+const broker = new ServiceBroker()
+
+// broker.createService({
+//     name: "math",
+//     actions: {
+//         add: {
+//             //meta information
+//             params: {
+//                 a: "number",
+//                 b: "number"
+//             },
+//             handler(ctx) {
+//                 const { a, b } = ctx.params
+//                 return a + b
+//             }
+//         }
+//     }
+// })
+
+
+broker.createService({
+    name: "math",
+    actions: {
+        add: {
+            //meta information
+            params: {
+                a: { type: "number", positive: true, integer: true },
+                b: { type: "number", positive: true, integer: true }
+            },
+            handler(ctx) {
+                const { a, b } = ctx.params
+                return a + b
+            }
+        }
+    }
+})
+
+async function main() {
+    try {
+        //start service broker: start webserver
+        await broker.start()
+        //invoke service methods
+        // const result = await broker.call('math.add', { a: 10, b: 20 })
+        // const result = await broker.call('math.add', { a: '10', b: 20 })
+        // const result = await broker.call('math.add', { a: -10, b: 20 })
+        const result = await broker.call('math.add', { a: 10.8, b: 20 })
+
+        console.log(result)
+
+    }
+    catch (err) {
+        console.log(err)
+    }
+}
+main()
+
+For More advanced validation rules for all types of variables in js.
+https://github.com/icebob/fastest-validator
+.....................................................................................
+		  Dynamic params and Dynamic invocation services
+.....................................................................................
+Moleculer has a tool called "Moleculer REPL"
+>npm install moleculer-repl --save-dev
+
+
+const { ServiceBroker } = require('moleculer')
+const broker = new ServiceBroker()
+
+broker.createService({
+    name: "math",
+    actions: {
+        add: {
+            //meta information
+            params: {
+                a: { type: "number", positive: true, integer: true, default: 0 },
+                b: { type: "number", positive: true, integer: true, default: 0 }
+            },
+            handler(ctx) {
+                const { a, b } = ctx.params
+                return a + b
+            }
+        }
+    }
+})
+
+async function main() {
+    try {
+        await broker.start()
+        //will start interactive commandline tool
+        broker.repl()
+    }
+    catch (err) {
+        console.log(err)
+    }
+}
+main()
+
+Testing:
+mol $ call math.add --a 45 --b 30
+>> Call 'math.add' with params: { a: 45, b: 30 } with meta: { '$repl': true }
+>> Execution time:550μs
+>> Response:
+75
+....................................................................................
+
+
+
 
 
 
