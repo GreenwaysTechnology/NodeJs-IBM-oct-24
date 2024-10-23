@@ -1,0 +1,20 @@
+{
+  "name": "calculator",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node services/app.service.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "moleculer-repl": "^0.7.4"
+  },
+  "dependencies": {
+    "moleculer": "^0.14.34",
+    "nats": "^2.28.2"
+  }
+}
