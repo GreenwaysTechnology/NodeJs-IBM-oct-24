@@ -1,0 +1,18 @@
+[2024-10-24T06:44:21.590Z] INFO  desktop-kaufcr7-7152/BROKER: Moleculer v0.14.34 is starting...
+[2024-10-24T06:44:21.591Z] INFO  desktop-kaufcr7-7152/BROKER: Namespace: <not defined>
+[2024-10-24T06:44:21.591Z] INFO  desktop-kaufcr7-7152/BROKER: Node ID: desktop-kaufcr7-7152
+[2024-10-24T06:44:21.592Z] INFO  desktop-kaufcr7-7152/REGISTRY: Strategy: RoundRobinStrategy
+[2024-10-24T06:44:21.592Z] INFO  desktop-kaufcr7-7152/REGISTRY: Discoverer: LocalDiscoverer
+[2024-10-24T06:44:21.598Z] INFO  desktop-kaufcr7-7152/BROKER: Serializer: JSONSerializer
+[2024-10-24T06:44:21.608Z] INFO  desktop-kaufcr7-7152/BROKER: Validator: FastestValidator
+[2024-10-24T06:44:21.609Z] INFO  desktop-kaufcr7-7152/BROKER: Registered 13 middleware(s).
+[2024-10-24T06:44:21.622Z] INFO  desktop-kaufcr7-7152/REGISTRY: '$node' service is registered.
+[2024-10-24T06:44:21.623Z] INFO  desktop-kaufcr7-7152/REGISTRY: 'hello' service is registered.
+[2024-10-24T06:44:21.623Z] INFO  desktop-kaufcr7-7152/$NODE: Service '$node' started.
+[2024-10-24T06:44:21.623Z] INFO  desktop-kaufcr7-7152/HELLO: Service 'hello' started.
+[2024-10-24T06:44:21.623Z] INFO  desktop-kaufcr7-7152/BROKER: ✔ ServiceBroker with 2 service(s) started successfully in 5ms.
+[2024-10-24T06:44:24.593Z] INFO  desktop-kaufcr7-7152/HELLO: Say Hello is called
+[2024-10-24T06:44:54.736Z] INFO  desktop-kaufcr7-7152/HELLO: Say Hello is called
+[2024-10-24T06:50:44.719Z] INFO  desktop-kaufcr7-7152/$NODE: Service '$node' stopped.
+[2024-10-24T06:50:44.719Z] INFO  desktop-kaufcr7-7152/HELLO: Service 'hello' stopped.
+[2024-10-24T06:50:44.719Z] INFO  desktop-kaufcr7-7152/BROKER: ServiceBroker is stopped. Good bye.
